@@ -419,6 +419,13 @@ typedef struct RTSPState {
     int buffer_size;
     int pkt_size;
     char *localaddr;
+
+    /**
+     * Added by Arteco 
+     * ONVIF Replay range in ISO Format (YYYYMMGGTHHmmSSZ-<YYYYMMGGTHHmmSSZ>)
+     */
+     char* onvif_replay_range;
+
 } RTSPState;
 
 #define RTSP_FLAG_FILTER_SRC  0x1    /**< Filter incoming UDP packets -

@@ -103,6 +103,7 @@ const AVOption ff_rtsp_options[] = {
     { "timeout", "set timeout (in microseconds) of socket I/O operations", OFFSET(stimeout), AV_OPT_TYPE_INT64, {.i64 = 0}, INT_MIN, INT64_MAX, DEC },
     COMMON_OPTS(),
     { "user_agent", "override User-Agent header", OFFSET(user_agent), AV_OPT_TYPE_STRING, {.str = LIBAVFORMAT_IDENT}, 0, 0, DEC },
+    { "onvif_replay_range", "Replay ISO range in ONVIF edge requests", OFFSET(onvif_replay_range), AV_OPT_TYPE_STRING, {.str = ""}, 0, 0, DEC },
     { NULL },
 };
 
@@ -1602,6 +1603,11 @@ int ff_rtsp_make_setup_request(AVFormatContext *s, const char *host, int port,
                         "RealChallenge2: %s, sd=%s\r\n",
                         rt->session_id, real_res, real_csum);
         }
+
+        // Added by ARTECO
+        if (rt->onvif_replay_range[0])
+            av_strlcat(cmd, "Require: onvif-replay\r\n", sizeof(cmd));
+
         ff_rtsp_send_cmd(s, "SETUP", rtsp_st->control_url, cmd, reply, NULL);
         if (reply->status_code == 461 /* Unsupported protocol */ && i == 0) {
             err = 1;
