@@ -403,6 +403,8 @@ FF_DISABLE_DEPRECATION_WARNINGS
 FF_ENABLE_DEPRECATION_WARNINGS
 #endif
 
+    int hasPS = (h->ps.sps_list[0] && h->ps.pps_list[0]);
+
     if (!avctx->internal->is_copy) {
         if (avctx->extradata_size > 0 && avctx->extradata) {
             ret = ff_h264_decode_extradata(avctx->extradata, avctx->extradata_size,
@@ -418,6 +420,13 @@ FF_ENABLE_DEPRECATION_WARNINGS
                ret = 0;
            }
         }
+    }
+
+    // Added by ARTECO
+    // SPS, PPS found in extradata: copy them in coded side data in case they don't get along with the video stream.
+    if (!hasPS && h->ps.sps_list[0] && h->ps.pps_list[0])
+    {
+        ff_add_extradata_side_data(avctx);
     }
 
     if (h->ps.sps && h->ps.sps->bitstream_restriction_flag &&

@@ -1014,6 +1014,29 @@ int ff_alloc_timecode_sei(const AVFrame *frame, AVRational rate, size_t prefix_l
     return 0;
 }
 
+// Added by ARTECO
+void ff_add_extradata_side_data(AVCodecContext* avctx)
+{
+    AVPacketSideData* tmp;
+    int i;
+
+    for (i = 0; i < avctx->nb_coded_side_data; i++)
+        if (avctx->coded_side_data[i].type == AV_PKT_DATA_NEW_EXTRADATA)
+            return;
+
+    tmp = av_realloc_array(avctx->coded_side_data, avctx->nb_coded_side_data + 1, sizeof(*tmp));
+    if (!tmp) {
+        return;
+    }
+
+    avctx->coded_side_data = tmp;
+    avctx->nb_coded_side_data++;
+
+    avctx->coded_side_data[avctx->nb_coded_side_data - 1].type = AV_PKT_DATA_NEW_EXTRADATA;
+    avctx->coded_side_data[avctx->nb_coded_side_data - 1].data = (uint8_t*)avctx->extradata;
+    avctx->coded_side_data[avctx->nb_coded_side_data - 1].size = avctx->extradata_size;
+}
+
 int64_t ff_guess_coded_bitrate(AVCodecContext *avctx)
 {
     AVRational framerate = avctx->framerate;

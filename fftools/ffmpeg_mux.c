@@ -225,6 +225,33 @@ static int write_packet(Muxer *mux, OutputStream *ost, AVPacket *pkt)
     if (ret < 0)
         goto fail;
 
+    if (ost->st->codecpar->codec_type == AVMEDIA_TYPE_VIDEO && ost->st->codecpar->codec_id == AV_CODEC_ID_H264) {
+
+        // Added by ARTECO
+        // Write extradata in front of packet data.
+        int extradata_size = 0;
+        uint8_t* sd = av_packet_get_side_data(pkt, AV_PKT_DATA_NEW_EXTRADATA, &extradata_size);
+        if (sd) {
+
+            AVPacket tmpPkt;
+            ret = av_new_packet(&tmpPkt, pkt->size + extradata_size);
+            if (ret < 0)
+                goto noheaderdata;
+
+            ret = av_packet_copy_props(&tmpPkt, pkt);
+            if (ret < 0) {
+                av_packet_unref(&tmpPkt);
+                goto noheaderdata;
+            }
+
+            memcpy(tmpPkt.data, sd, extradata_size);
+            memcpy(tmpPkt.data + extradata_size, pkt->data, pkt->size);
+            av_packet_unref(pkt);
+            av_packet_move_ref(pkt, &tmpPkt);
+        }
+    }
+
+noheaderdata:
     ms->data_size_mux += pkt->size;
     frame_num = atomic_fetch_add(&ost->packets_written, 1);
 

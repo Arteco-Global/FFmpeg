@@ -193,6 +193,13 @@ int avpriv_codec_get_cap_skip_frame_fill_param(const AVCodec *codec);
 int ff_alloc_timecode_sei(const AVFrame *frame, AVRational rate, size_t prefix_len,
                      void **data, size_t *sei_size);
 
+
+/**
+ * Add a new extrdata side data to an encoding context (Added by ARTECO).
+ */
+void ff_add_extradata_side_data(AVCodecContext* avctx);
+
+
 /**
  * Get an estimated video bitrate based on frame size, frame rate and coded
  * bits per pixel.
